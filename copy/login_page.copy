@@ -1,0 +1,152 @@
+import 'package:flutter/material.dart';
+
+class LoginPage extends StatelessWidget {
+   LoginPage({super.key});
+
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.only(left: 400, right: 400),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Center(
+                child: Image.asset(
+                  'lib/assets/images/gogo.png', // Provide your image path here
+                  height: 500,
+                  width: 400,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  'Sign in',
+                  style: TextStyle(color: Colors.black, fontSize: 22,fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  'Welcome to Knutsford calorie tracker! Please sign in to continue.',
+                  style: TextStyle(color: Colors.black,fontSize: 20),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: TextButton(
+                  onPressed: () {
+                    // Action for Register button
+                  },
+                  child: const Text(
+                    'Don\'t have an account? Register',
+                    style: TextStyle(color: Colors.blue,fontSize: 19),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SizedBox(
+                  height: 60,
+                  child: TextField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black, width: 4.0),
+                      ),
+                      hintText: 'Enter your email',
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SizedBox(
+                  height: 60,
+                  child: TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black, width: 4.0),
+                      ),
+                      hintText: 'Password',
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: TextButton(
+                  onPressed: () {
+                    // Action for Forgot password button
+                  },
+                  child: const Text(
+                    'Forgot password?',
+                    style: TextStyle(color: Colors.lightBlueAccent),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton( 
+                  onPressed: () {
+                    // Action for the button
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const BeveledRectangleBorder(),
+                    backgroundColor: Colors.white70,                 
+                  ),
+                  child: const Text(
+                    'Sign in ',
+                    style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
+                    ),
+                ),
+              ), 
+
+              
+
+              const SizedBox(height: 25),
+
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton( 
+                  onPressed: () {
+                    // Action for the button
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const BeveledRectangleBorder(),
+                    backgroundColor: Colors.lightBlue,                 
+                  ),
+                  child: const Text(
+                    'Sign in with google',
+                    style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
+                    ),
+                ),
+
+
+              ), 
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

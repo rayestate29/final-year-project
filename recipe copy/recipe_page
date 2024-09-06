@@ -1,0 +1,123 @@
+import 'package:finalc/services/data_service.dart';
+import 'package:flutter/material.dart';
+
+
+
+
+class Recipe extends StatefulWidget {
+  const Recipe({super.key});
+
+  @override
+  State<Recipe> createState() => _RecipeState();
+}
+
+class _RecipeState extends State<Recipe> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Recipe Book',
+          style: TextStyle(fontSize: 24), // Adjust the font size if needed
+        ),
+        centerTitle: true, // Center the title text
+      ),
+      body: SafeArea(
+        child: _build(context), // Pass context to _build method
+      ),
+    );
+  }
+
+  Widget _build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: [
+          _recipeTypeButtons(context), 
+          _recipesList(),// Pass context to _recipeTypeButtons method
+        ],
+      ),
+    );
+  }
+
+  Widget _recipeTypeButtons(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.05,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: FilledButton(onPressed: () {}, child: const Text('Snack')),
+          ),
+
+
+           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: FilledButton(onPressed: () {}, child: const Text('Breakfast')),
+          ),
+
+
+           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: FilledButton(onPressed: () {}, child: const Text('Lunch')),
+          ),
+
+           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: FilledButton(onPressed: () {}, child: const Text('Dinner')),
+          )
+
+
+        ],
+      ),
+    );
+  }
+
+  Widget _recipesList() {
+    return Expanded(
+      child: FutureBuilder(
+        future: DataService().getRecipes(), 
+    builder: (context, snapshot) { 
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator()
+        );
+      }
+      if (snapshot.hasError) {
+        return const Center(child: Text("Unable to load data. "));
+      }
+
+      return ListView.builder(
+
+        itemCount: snapshot.data!.length,
+        itemBuilder: (context, index) {
+          Recipe recipe = snapshot.data![index];
+          return ListTile(
+            isThreeLine: true,
+            subtitle: Text('${recipe.cuisine}\nDifficulty: ${recipe.difficultty}'),
+            leading: Image.network(recipe.image),
+            title: Text(recipe.name,
+            ),
+          );
+        },
+        );
+
+
+
+      
+      }
+      )
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+

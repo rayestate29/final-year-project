@@ -1,0 +1,54 @@
+import 'package:dio/dio.dart';
+import 'package:finalc/services/consts.dart'; // Adjust the path accordingly
+
+class HTTPService {
+  static final HTTPService _singleton = HTTPService._internal();
+
+  final Dio _dio = Dio();
+
+  factory HTTPService() {
+    return _singleton;
+  }
+
+  HTTPService._internal() {
+    setup();
+  }
+
+  Future<void> setup({String? bearerToken}) async {
+    final headers = {
+      "Content-Type": "application/json",
+      if (bearerToken != null) "Authorization": "Bearer $bearerToken",
+    };
+
+    final options = BaseOptions(
+      baseUrl: API_BASE_URL, // Use the constant defined in another file
+      headers: headers,
+      validateStatus: (status) {
+        if (status == null) return false;
+        return status < 500;
+      },
+    );
+    _dio.options = options;
+  }
+
+
+  Future<Response?> post(String path,Map data) async {
+    try {
+      final response = await _dio.post(path, data: data,);
+      return response;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+   Future<Response?> get (String path) async {
+    try{
+      final response = await _dio.get(path);
+    } catch (e) {
+      print(e);
+    }
+       return null;
+   }
+
+  // Add any other methods for HTTP requests (GET, POST, etc.) here
+}

@@ -1,0 +1,55 @@
+import 'package:flutter/material.dart';
+import 'package:finalc/graphs/bar.dart';
+import 'package:finalc/graphs/pie.dart';
+import 'package:finalc/graphs/line.dart';
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Title for the Pie Chart
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Daily Nutritional Info',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // Pie Chart at the top of the dashboard
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: PieChartSample2(),
+            ),
+            // Bar Chart below the pie chart
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: BarChartSample2(),
+            ),
+            // Line Chart below the bar chart
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: LineChartSample1(),
+            ),
+            // Placeholder for other charts
+            Container(
+              height: 400, // Placeholder height for other charts
+              color: Colors.grey[200],
+              child: const Center(child: Text('Other Charts Go Here')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

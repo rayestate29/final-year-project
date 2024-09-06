@@ -1,0 +1,568 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  int? breakfastCalories;
+  int? lunchCalories;
+  int? dinnerCalories;
+
+  int? totalProteinCalories;
+  int? totalFatsCalories;
+  int? totalCarbsCalories;
+
+  bool isLoading = true;
+  Map<String, int> weeklyCalories = {
+    'Mon': 0,
+    'Tue': 0,
+    'Wed': 0,
+    'Thu': 0,
+    'Fri': 0,
+    'Sat': 0,
+    'Sun': 0,
+  };
+
+  Map<String, int> monthlyCalories = {
+    'Jan': 0,
+    'Feb': 0,
+    'Mar': 0,
+    'Apr': 0,
+    'May': 0,
+    'Jun': 0,
+    'Jul': 0,
+    'Aug': 0,
+    'Sep': 0,
+    'Oct': 0,
+    'Nov': 0,
+    'Dec': 0,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    updateCalories();
+    updateWeeklyCalories();
+    updateMonthlyCalories();
+  }
+
+  void updateCalories() async {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime tomorrow = today.add(const Duration(days: 1));
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('meals')
+          .where('trackedTime', isGreaterThanOrEqualTo: today)
+          .where('trackedTime', isLessThan: tomorrow)
+          .get();
+
+      int breakfast = 0;
+      int lunch = 0;
+      int dinner = 0;
+
+      int proteinCalories = 0;
+      int fatsCalories = 0;
+      int carbsCalories = 0;
+
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final int protein = data['protein'];
+        final int fats = data['fats'];
+        final int carbs = data['carbs'];
+        final int totalCalories = (protein * 4) + (fats * 9) + (carbs * 4);
+
+        proteinCalories += (protein * 4);
+        fatsCalories += (fats * 9);
+        carbsCalories += (carbs * 4);
+
+        final String mealType = data['type'];
+        if (mealType == 'Breakfast') {
+          breakfast += totalCalories;
+        } else if (mealType == 'Lunch') {
+          lunch += totalCalories;
+        } else if (mealType == 'Dinner') {
+          dinner += totalCalories;
+        }
+      }
+
+      setState(() {
+        breakfastCalories = breakfast;
+        lunchCalories = lunch;
+        dinnerCalories = dinner;
+        totalProteinCalories = proteinCalories;
+        totalFatsCalories = fatsCalories;
+        totalCarbsCalories = carbsCalories;
+        isLoading = false;
+      });
+
+      updateWeeklyCalories();  // Update weekly calories after updating daily calories
+    } catch (e) {
+      // Handle errors appropriately
+      setState(() {
+        isLoading = false;
+      });
+      print("Error retrieving data: $e");
+    }
+  }
+
+  void updateWeeklyCalories() async {
+    final DateTime now = DateTime.now();
+    final DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final DateTime endOfWeek = startOfWeek.add(const Duration(days: 7));
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('meals')
+          .where('trackedTime', isGreaterThanOrEqualTo: startOfWeek)
+          .where('trackedTime', isLessThan: endOfWeek)
+          .get();
+
+      Map<String, int> tempWeeklyCalories = {
+        'Mon': 0,
+        'Tue': 0,
+        'Wed': 0,
+        'Thu': 0,
+        'Fri': 0,
+        'Sat': 0,
+        'Sun': 0,
+      };
+
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final int protein = data['protein'];
+        final int fats = data['fats'];
+        final int carbs = data['carbs'];
+        final int totalCalories = (protein * 4) + (fats * 9) + (carbs * 4);
+
+        final DateTime trackedTime = data['trackedTime'].toDate();
+        final int dayOfWeek = trackedTime.weekday;
+
+        switch (dayOfWeek) {
+          case 1:
+            tempWeeklyCalories['Mon'] = tempWeeklyCalories['Mon']! + totalCalories;
+            break;
+          case 2:
+            tempWeeklyCalories['Tue'] = tempWeeklyCalories['Tue']! + totalCalories;
+            break;
+          case 3:
+            tempWeeklyCalories['Wed'] = tempWeeklyCalories['Wed']! + totalCalories;
+            break;
+          case 4:
+            tempWeeklyCalories['Thu'] = tempWeeklyCalories['Thu']! + totalCalories;
+            break;
+          case 5:
+            tempWeeklyCalories['Fri'] = tempWeeklyCalories['Fri']! + totalCalories;
+            break;
+          case 6:
+            tempWeeklyCalories['Sat'] = tempWeeklyCalories['Sat']! + totalCalories;
+            break;
+          case 7:
+            tempWeeklyCalories['Sun'] = tempWeeklyCalories['Sun']! + totalCalories;
+            break;
+        }
+      }
+
+      setState(() {
+        weeklyCalories = tempWeeklyCalories;
+      });
+    } catch (e) {
+      // Handle errors appropriately
+      print("Error retrieving data: $e");
+    }
+  }
+
+  void updateMonthlyCalories() async {
+    final DateTime now = DateTime.now();
+    final DateTime startOfYear = DateTime(now.year, 1, 1);
+    final DateTime endOfYear = DateTime(now.year + 1, 1, 1);
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('meals')
+          .where('trackedTime', isGreaterThanOrEqualTo: startOfYear)
+          .where('trackedTime', isLessThan: endOfYear)
+          .get();
+
+      Map<String, int> tempMonthlyCalories = {
+        'Jan': 0,
+        'Feb': 0,
+        'Mar': 0,
+        'Apr': 0,
+        'May': 0,
+        'Jun': 0,
+        'Jul': 0,
+        'Aug': 0,
+        'Sep': 0,
+        'Oct': 0,
+        'Nov': 0,
+        'Dec': 0,
+      };
+
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final int protein = data['protein'];
+        final int fats = data['fats'];
+        final int carbs = data['carbs'];
+        final int totalCalories = (protein * 4) + (fats * 9) + (carbs * 4);
+
+        final DateTime trackedTime = data['trackedTime'].toDate();
+        final int month = trackedTime.month;
+
+        switch (month) {
+          case 1:
+            tempMonthlyCalories['Jan'] = tempMonthlyCalories['Jan']! + totalCalories;
+            break;
+          case 2:
+            tempMonthlyCalories['Feb'] = tempMonthlyCalories['Feb']! + totalCalories;
+            break;
+          case 3:
+            tempMonthlyCalories['Mar'] = tempMonthlyCalories['Mar']! + totalCalories;
+            break;
+          case 4:
+            tempMonthlyCalories['Apr'] = tempMonthlyCalories['Apr']! + totalCalories;
+            break;
+          case 5:
+            tempMonthlyCalories['May'] = tempMonthlyCalories['May']! + totalCalories;
+            break;
+          case 6:
+            tempMonthlyCalories['Jun'] = tempMonthlyCalories['Jun']! + totalCalories;
+            break;
+          case 7:
+            tempMonthlyCalories['Jul'] = tempMonthlyCalories['Jul']! + totalCalories;
+            break;
+          case 8:
+            tempMonthlyCalories['Aug'] = tempMonthlyCalories['Aug']! + totalCalories;
+            break;
+          case 9:
+            tempMonthlyCalories['Sep'] = tempMonthlyCalories['Sep']! + totalCalories;
+            break;
+          case 10:
+            tempMonthlyCalories['Oct'] = tempMonthlyCalories['Oct']! + totalCalories;
+            break;
+          case 11:
+            tempMonthlyCalories['Nov'] = tempMonthlyCalories['Nov']! + totalCalories;
+            break;
+          case 12:
+            tempMonthlyCalories['Dec'] = tempMonthlyCalories['Dec']! + totalCalories;
+            break;
+        }
+      }
+
+      setState(() {
+        monthlyCalories = tempMonthlyCalories;
+      });
+    } catch (e) {
+      // Handle errors appropriately
+      print("Error retrieving data: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.indigoAccent,
+      appBar: AppBar(
+        title: const Text('Dashboard',style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.indigoAccent,
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Daily Calorie Breakdown',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CalorieCard(
+                        key: UniqueKey(),  // Add a key parameter
+                        title: 'Breakfast',
+                        calories: breakfastCalories ?? 0,
+                        icon: Icons.free_breakfast,
+                        color: Colors.brown
+                      ),
+                      CalorieCard(
+                        key: UniqueKey(),  // Add a key parameter
+                        title: 'Lunch',
+                        calories: lunchCalories ?? 0,
+                        icon: Icons.lunch_dining,
+                        color: Colors.orange,
+                        
+                      ),
+                      CalorieCard(
+                        key: UniqueKey(),  // Add a key parameter
+                        title: 'Dinner',
+                        calories: dinnerCalories ?? 0,
+                        icon: Icons.dinner_dining,
+                        color: Colors.pink,
+                        
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  const Text(
+                    'Total Calories Consumed per Meal Type (Weekly)',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CalorieCard(
+                        key: UniqueKey(),  // Add a key parameter
+                        title: 'Breakfast',
+                        calories: weeklyCalories['Mon']! + weeklyCalories['Tue']! + weeklyCalories['Wed']! + weeklyCalories['Thu']! + weeklyCalories['Fri']! + weeklyCalories['Sat']! + weeklyCalories['Sun']!,
+                        icon: Icons.free_breakfast,
+                        color: Colors.blue,
+                      ),
+                      CalorieCard(
+                        key: UniqueKey(),  // Add a key parameter
+                        title: 'Lunch',
+                        calories: weeklyCalories['Mon']! + weeklyCalories['Tue']! + weeklyCalories['Wed']! + weeklyCalories['Thu']! + weeklyCalories['Fri']! + weeklyCalories['Sat']! + weeklyCalories['Sun']!,
+                        icon: Icons.lunch_dining,
+                        color: Colors.cyanAccent,
+                      ),
+                      CalorieCard(
+                        key: UniqueKey(),  // Add a key parameter
+                        title: 'Dinner',
+                        calories: weeklyCalories['Mon']! + weeklyCalories['Tue']! + weeklyCalories['Wed']! + weeklyCalories['Thu']! + weeklyCalories['Fri']! + weeklyCalories['Sat']! + weeklyCalories['Sun']!,
+                        icon: Icons.dinner_dining,
+                        color: Colors.greenAccent,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  const Text(
+                    'Weekly Calorie Input',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 400,
+                    child: Stack(
+                      children: [
+                        BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: 5000,
+                            barTouchData: BarTouchData(enabled: false),
+                            titlesData: FlTitlesData(
+                              show: true,
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                                    return Text(days[value.toInt()], style: const TextStyle(color: Colors.white));
+                                  },
+                                ),
+                              ),
+                              leftTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false), // Hide left titles
+                              ),
+                              topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false), // Hide top titles
+                              ),
+                              rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false), // Hide right titles
+                              ),
+                            ),
+                            gridData: const FlGridData(show: false), // Hide grid lines
+                            borderData: FlBorderData(show: false),
+                            barGroups: [
+                              for (int i = 0; i < weeklyCalories.length; i++)
+                                BarChartGroupData(
+                                  x: i,
+                                  barRods: [
+                                    BarChartRodData(
+                                      toY: weeklyCalories.values.elementAt(i).toDouble(),
+                                      color: Colors.blue,
+                                      width: 22,
+                                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                                    ),
+                                  ],
+                                  showingTooltipIndicators: [0],
+                                ),
+                            ],
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: Column(
+                            children: [
+                              for (int i = 0; i < weeklyCalories.length; i++)
+                                Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      '${weeklyCalories.values.elementAt(i)} kcal',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  const Text(
+                    'Monthly Calorie Input',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 400,
+                    child: Stack(
+                      children: [
+                        BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: 5000,
+                            barTouchData: BarTouchData(enabled: false),
+                            titlesData: FlTitlesData(
+                              show: true,
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                    return Text(months[value.toInt()], style: const TextStyle(color: Colors.white));
+                                  },
+                                ),
+                              ),
+                              leftTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false), // Hide left titles
+                              ),
+                              topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false), // Hide top titles
+                              ),
+                              rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false), // Hide right titles
+                              ),
+                            ),
+                            gridData: const FlGridData(show: false), // Hide grid lines
+                            borderData: FlBorderData(show: false),
+                            barGroups: [
+                              for (int i = 0; i < monthlyCalories.length; i++)
+                                BarChartGroupData(
+                                  x: i,
+                                  barRods: [
+                                    BarChartRodData(
+                                      toY: monthlyCalories.values.elementAt(i).toDouble(),
+                                      color: Colors.blue,
+                                      width: 22,
+                                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                                    ),
+                                  ],
+                                  showingTooltipIndicators: [0],
+                                ),
+                            ],
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: Column(
+                            children: [
+                              for (int i = 0; i < monthlyCalories.length; i++)
+                                Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      '${monthlyCalories.values.elementAt(i)} kcal',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+}
+class CalorieCard extends StatelessWidget {
+  final String title;
+  final int calories;
+  final IconData icon;
+  final Color color;
+
+  const CalorieCard({
+    super.key,
+    required this.title,
+    required this.calories,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: color,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$calories kcal',
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

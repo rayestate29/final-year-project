@@ -1,0 +1,201 @@
+import 'package:flutter/material.dart';
+
+class HerbalPage extends StatefulWidget {
+  const HerbalPage({Key? key}) : super(key: key);
+
+  @override
+  State<HerbalPage> createState() => _HerbalPageState();
+}
+
+class _HerbalPageState extends State<HerbalPage> {
+  final List<HerbalItem> _herbalItems = [
+    HerbalItem(
+      condition: 'Cough',
+      symptoms: 'Persistent cough, sore throat, chest congestion',
+      remedyName: 'Rosemary/Eucalyptus oils with steam',
+      ingredients: 'Rosemary or Eucalyptus',
+      treatmentSteps:
+          'Step 1: Fill a large bowl with hot water\nStep 2: Add herbs or essential oils such as eucalyptus or rosemary which may help with congestion\nStep 3: Leaning over the bowl, placing a towel over the head which traps the steam.\nStep 4: Breathe in the steam for about 10-15 minutes',
+      lifestyleTips:
+          'Rest, hydration, steam inhalation, drinking warm fluids such as broth or tea',
+      imageUrl: 'lib/assets/herbal/hcough.jpg', // Example image URL
+    ),
+    HerbalItem(
+      condition: 'Cough',
+      symptoms: 'Persistent cough, sore throat, chest congestion',
+      remedyName: 'SaltWater Gargle',
+      ingredients: 'Salt, Warm Water',
+      treatmentSteps:
+          'Step 1: Stir 1/2 teaspoon of salt into a cup of warm water until it dissolves\nStep 2: Allow the solution to cool slightly before using it to gargle\nStep 3: Let the mixture sit at the back of the throat for a few moments before spitting it out\nStep 4: Do this several times each day until the cough improves',
+      lifestyleTips:
+          'Rest, hydration, steam inhalation, drinking warm fluids such as broth or tea',
+      imageUrl: 'lib/assets/herbal/salt.jpg', // Example image URL
+    ),
+    HerbalItem(
+      condition: 'Cough',
+      symptoms: 'Persistent cough, sore throat, chest congestion',
+      remedyName: 'Garlic',
+      ingredients: 'Garlic cloves, honey',
+      treatmentSteps: 'Step 1: Crush garlic cloves\nStep 2: Mix with honey\nStep 3: Consume',
+      lifestyleTips: 'Rest, hydration, steam inhalation, drinking warm fluids such as broth or tea',
+      imageUrl: 'lib/assets/herbal/hcough.jpg', // Example image URL
+    ),
+    HerbalItem(
+      condition: 'Joint Pain',
+      symptoms: 'Persistent cough, sore throat, chest congestion',
+      remedyName: 'Garlic',
+      ingredients: 'Garlic cloves, honey',
+      treatmentSteps: 'Step 1: Crush garlic cloves\nStep 2: Mix with honey\nStep 3: Consume',
+      lifestyleTips: 'Rest, hydration, steam inhalation',
+      imageUrl: 'lib/assets/herbal/hcough.jpg', // Example image URL
+    ),
+    // Add more herbal items here
+  ];
+
+  final List<HerbalItem> _filteredItems = [];
+
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredItems.addAll(_herbalItems);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Herbal Page'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                _filterItems(value);
+              },
+              decoration: const InputDecoration(
+                hintText: 'Search condition...',
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _filteredItems.length,
+              itemBuilder: (context, index) {
+                return _buildHerbalCard(_filteredItems[index]);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHerbalCard(HerbalItem item) {
+    return Card(
+      color: Colors.white,
+      elevation: 3,
+      margin: const EdgeInsets.all(8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset(
+                item.imageUrl,
+                fit: BoxFit.fitHeight,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildText(
+                    'Condition:',
+                    item.condition,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildText('Symptoms', item.symptoms),
+                  const SizedBox(height: 8),
+                  _buildText('Remedy Name', item.remedyName),
+                  const SizedBox(height: 8),
+                  _buildText('Remedy Ingredients', item.ingredients),
+                  const SizedBox(height: 8),
+                  _buildText('Treatment Steps', item.treatmentSteps),
+                  const SizedBox(height: 8),
+                  _buildText('Lifestyle Tips', item.lifestyleTips),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildText(String label, String text,
+      {double fontSize = 16,
+      FontWeight fontWeight = FontWeight.normal,
+      Color color = Colors.black}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSize),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          text,
+          style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color),
+        ),
+      ],
+    );
+  }
+
+  void _filterItems(String query) {
+    _filteredItems.clear();
+    if (query.isEmpty) {
+      _filteredItems.addAll(_herbalItems);
+    } else {
+      _filteredItems.addAll(_herbalItems.where(
+          (item) => item.condition.toLowerCase().contains(query.toLowerCase())));
+    }
+    setState(() {});
+  }
+}
+
+class HerbalItem {
+  final String condition;
+  final String symptoms;
+  final String remedyName;
+  final String ingredients;
+  final String treatmentSteps;
+  final String lifestyleTips;
+  final String imageUrl;
+
+  HerbalItem({
+    required this.condition,
+    required this.symptoms,
+    required this.remedyName,
+    required this.ingredients,
+    required this.treatmentSteps,
+    required this.lifestyleTips,
+    required this.imageUrl,
+  });
+}
+

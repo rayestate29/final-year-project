@@ -1,0 +1,90 @@
+import 'package:flutter/material.dart';
+
+class RecipePage extends StatefulWidget {
+  const RecipePage({super.key});
+
+  @override
+  State<RecipePage> createState() => _RecipePageState();
+}
+
+class _RecipePageState extends State<RecipePage> {
+  String _selectedPage = 'Breakfast';
+
+  void _navigateTo(String page) {
+    setState(() {
+      _selectedPage = page;
+    });
+    Navigator.of(context).pop(); // Close the drawer
+  }
+
+  Widget _buildPage() {
+    switch (_selectedPage) {
+      case 'Breakfast':
+        return const Center(child: Text('Breakfast Recipes'));
+      case 'Lunch':
+        return const Center(child: Text('Lunch Recipes'));
+      case 'Dinner':
+        return const Center(child: Text('Dinner Recipes'));
+      case 'Beverages':
+        return const Center(child: Text('Beverage Recipes'));
+      case 'Saved Meals':
+        return const Center(child: Text('Saved Meals'));
+      default:
+        return const Center(child: Text('Unknown Page'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Recipe Page'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            const DrawerHeader(
+              child: Text('Search Meals', style: TextStyle(color: Colors.white)),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Search',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  // Handle search logic
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Breakfast'),
+              onTap: () => _navigateTo('Breakfast'),
+            ),
+            ListTile(
+              title: const Text('Lunch'),
+              onTap: () => _navigateTo('Lunch'),
+            ),
+            ListTile(
+              title: const Text('Dinner'),
+              onTap: () => _navigateTo('Dinner'),
+            ),
+            ListTile(
+              title: const Text('Beverages'),
+              onTap: () => _navigateTo('Beverages'),
+            ),
+            ListTile(
+              title: const Text('Saved Meals'),
+              onTap: () => _navigateTo('Saved Meals'),
+            ),
+          ],
+        ),
+      ),
+      body: _buildPage(),
+    );
+  }
+}
